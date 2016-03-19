@@ -9,16 +9,15 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Created by elithe on 3/8/2016.
  */
 public class CustomAdapter extends BaseAdapter {
     private Context mContext;
-    private ArrayList<String> mTodos;
+    private ArrayList<TodoItem> mTodos;
 
-    public CustomAdapter(Context context, ArrayList<String> todos) {
+    public CustomAdapter(Context context, ArrayList<TodoItem> todos) {
         mContext = context;
         mTodos = todos;
     }
@@ -44,11 +43,21 @@ public class CustomAdapter extends BaseAdapter {
                 LayoutInflater.from(mContext);
         convertView = inflater.inflate(R.layout.row,parent,false);
         TextView itemTextView = (TextView) convertView.findViewById(R.id.Item);
-        itemTextView.setText(mTodos.get(position));
-        if((position % 2) != 0)
-            itemTextView.setTextColor(Color.BLUE);
-        else
+        TextView dueTextView = (TextView) convertView.findViewById(R.id.DueDate);
+
+        TodoItem curItem = mTodos.get(position);
+        itemTextView.setText(curItem.getTodo());
+        dueTextView.setText(curItem.getDateStr());
+
+        if(!curItem.passedDueDate())
+        {
+            itemTextView.setTextColor(Color.BLACK);
+            dueTextView.setTextColor(Color.BLACK);
+        }
+        else {
             itemTextView.setTextColor(Color.RED);
+            dueTextView.setTextColor(Color.RED);
+        }
         return convertView;
     }
 }
