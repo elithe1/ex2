@@ -4,16 +4,15 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
+
+import com.firebase.client.Firebase;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,17 +21,25 @@ public class TodoListManagerActivity extends AppCompatActivity {
     private ArrayList<TodoItem> todosArray = new ArrayList<>();
     private ListView lstTodoItems;
     private CustomAdapter adapter;
+    private  Firebase myFirebaseRef;
+    private DBHandler db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_list_manager);
 
+        db = new DBHandler(getApplicationContext());
+
         lstTodoItems = (ListView) findViewById(R.id.lstTodoItems);
         registerForContextMenu(lstTodoItems);
+
+        todosArray = db.getAllTodos();
+
         adapter = new CustomAdapter(this, todosArray);
         lstTodoItems.setAdapter(adapter);
 
     }
+
     //delete call menu
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -50,7 +57,6 @@ public class TodoListManagerActivity extends AppCompatActivity {
         menu.setHeaderTitle(title);
         if(curItem.call)
             menu.add(curItem.getTodo());
-
     }
 
 
@@ -63,6 +69,7 @@ public class TodoListManagerActivity extends AppCompatActivity {
         switch (item.getItemId())
         {
             case R.id.menuItemDelete:
+                db.deleteTodo(curItem);
                 todosArray.remove(curItem);
                 adapter.notifyDataSetChanged();
                 break;
@@ -99,10 +106,13 @@ public class TodoListManagerActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode == 0)
+            return;
         super.onActivityResult(requestCode, resultCode, data);
         Date d = (Date) data.getExtras().getSerializable("dueDate");
         String t = data.getExtras().getString("title");
         TodoItem newToDoItem = new TodoItem(d,t);
+        db.insertTodo(newToDoItem);
         todosArray.add(newToDoItem);
         adapter.notifyDataSetChanged();
     }
